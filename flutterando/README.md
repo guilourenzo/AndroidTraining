@@ -1,6 +1,6 @@
 # flutterando
 
-A new Flutter project.
+A new Flutter project. based on Flutterand Code Training on [Youtube](https://youtube.com/playlist?list=PLlBnICoI-g-d-J57QIz6Tx5xtUDGQdBFB)
 
 ## Getting Started
 
