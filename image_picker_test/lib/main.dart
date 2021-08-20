@@ -1,73 +1,143 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-void main() => runApp(MyApp());
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+void main() {
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: Scaffold(
-            appBar: AppBar(title: Text('Pick Image From Camera & Gallery')),
-            body: Center(child: MyImagePicker())));
+      title: 'Flutter Image Test: Image Picker',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomePage(),
+    );
   }
 }
 
-class MyImagePicker extends StatefulWidget {
-  @override
-  MyImagePickerState createState() => MyImagePickerState();
-}
+enum ImageSourceType { gallery, camera }
 
-class MyImagePickerState extends State {
-  late File imageURI;
-  final _picker = ImagePicker();
-
-  Future getImageFromCamera() async {
-    PickedFile? image = await _picker.getImage(source: ImageSource.camera);
-
-    setState(() {
-      imageURI = File(image!.path);
-    });
-  }
-
-  Future getImageFromGallery() async {
-    PickedFile? image = await _picker.getImage(source: ImageSource.gallery);
-
-    setState(() {
-      imageURI = File(image!.path);
-    });
+class HomePage extends StatelessWidget {
+  void _handleURLButtonPress(BuildContext context, var type) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => ImageFromGalleryEx(type)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          title: Text("Image Picker Example"),
+        ),
         body: Center(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-          imageURI == null
-              ? Text('No image selected.')
-              : Image.file(imageURI,
-                  width: 300, height: 200, fit: BoxFit.cover),
-          Container(
-              margin: EdgeInsets.fromLTRB(0, 30, 0, 20),
-              child: RaisedButton(
-                onPressed: () => getImageFromCamera(),
-                child: Text('Click Here To Select Image From Camera'),
-                textColor: Colors.white,
-                color: Colors.green,
-                padding: EdgeInsets.fromLTRB(12, 12, 12, 12),
-              )),
-          Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              child: RaisedButton(
-                onPressed: () => getImageFromGallery(),
-                child: Text('Click Here To Select Image From Gallery'),
-                textColor: Colors.white,
-                color: Colors.green,
-                padding: EdgeInsets.fromLTRB(12, 12, 12, 12),
-              ))
-        ])));
+          child: Column(
+            children: [
+              MaterialButton(
+                color: Colors.blue,
+                child: Text(
+                  "Pick Image from Gallery",
+                  style: TextStyle(
+                      color: Colors.white70, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  _handleURLButtonPress(context, ImageSourceType.gallery);
+                },
+              ),
+              MaterialButton(
+                color: Colors.blue,
+                child: Text(
+                  "Pick Image from Camera",
+                  style: TextStyle(
+                      color: Colors.white70, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  _handleURLButtonPress(context, ImageSourceType.camera);
+                },
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
+class ImageFromGalleryEx extends StatefulWidget {
+  final type;
+  ImageFromGalleryEx(this.type);
+
+  @override
+  ImageFromGalleryExState createState() => ImageFromGalleryExState(this.type);
+}
+
+class ImageFromGalleryExState extends State<ImageFromGalleryEx> {
+  var _image;
+  var imagePicker;
+  var type;
+
+  ImageFromGalleryExState(this.type);
+
+  @override
+  void initState() {
+    super.initState();
+    imagePicker = new ImagePicker();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+          title: Text(type == ImageSourceType.camera
+              ? "Image from Camera"
+              : "Image from Gallery")),
+      body: Column(
+        children: <Widget>[
+          SizedBox(
+            height: 52,
+          ),
+          Center(
+            child: GestureDetector(
+              onTap: () async {
+                var source = type == ImageSourceType.camera
+                    ? ImageSource.camera
+                    : ImageSource.gallery;
+                XFile image = await imagePicker.pickImage(
+                    source: source,
+                    imageQuality: 50,
+                    preferredCameraDevice: CameraDevice.front);
+                setState(() {
+                  _image = File(image.path);
+                });
+              },
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(color: Colors.red[200]),
+                child: _image != null
+                    ? Image.file(
+                        _image,
+                        width: 200.0,
+                        height: 200.0,
+                        fit: BoxFit.fitHeight,
+                      )
+                    : Container(
+                        decoration: BoxDecoration(color: Colors.red[200]),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
